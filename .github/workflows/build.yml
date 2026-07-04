@@ -1,0 +1,61 @@
+name: Build TWRP Recovery
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'TWRP Manifest Branch'
+        required: false
+        default: 'twrp-12.1'
+      DEVICE_TREE:
+        description: 'Device Tree URL'
+        required: false
+        default: 'https://github.com/laozhang-niubi/TWRP_device_PD2231'
+      DEVICE_TREE_BRANCH:
+        description: 'Device Tree Branch'
+        required: false
+        default: 'master'
+      DEVICE_NAME:
+        description: 'Device Codename'
+        required: false
+        default: 'PD2231'
+      DEVICE_PATH:
+        description: 'Device Path'
+        required: false
+        default: 'device/vivo/PD2231'
+      MAKEFILE_NAME:
+        description: 'Makefile Name'
+        required: false
+        default: 'omni_PD2231'
+      BUILD_TARGET:
+        description: 'Build Target'
+        required: false
+        default: 'recovery'
+
+jobs:
+  build:
+    name: Build TWRP
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 24
+
+    - name: Build TWRP
+      uses: mlm-games/twrp-build-action@main
+      with:
+        MANIFEST_BRANCH: ${{ github.event.inputs.MANIFEST_BRANCH }}
+        DEVICE_TREE: ${{ github.event.inputs.DEVICE_TREE }}
+        DEVICE_TREE_BRANCH: ${{ github.event.inputs.DEVICE_TREE_BRANCH }}
+        DEVICE_NAME: ${{ github.event.inputs.DEVICE_NAME }}
+        DEVICE_PATH: ${{ github.event.inputs.DEVICE_PATH }}
+        MAKEFILE_NAME: ${{ github.event.inputs.MAKEFILE_NAME }}
+        BUILD_TARGET: ${{ github.event.inputs.BUILD_TARGET }}
+
+    - name: Upload Recovery Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: TWRP-PD2231
+        path: ${{ env.OUTPUT_DIR }}/*.img
